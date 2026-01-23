@@ -45,4 +45,4 @@ jobs:
             /repos/${{ github.repository }}/actions/variables/EMAIL_SENT \
             -f value="true"
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PAT_TOKEN: ${{ secrets.PAT_TOKEN }}
