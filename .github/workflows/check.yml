@@ -25,6 +25,7 @@ jobs:
 
       - id: run_ticket_check
         name: Run ticket check
+        if: ${{ vars.EMAIL_SENT == 'false' }}
         env:
           SMTP_SERVER: ${{ secrets.SMTP_SERVER }}
           SMTP_USER: ${{ secrets.SMTP_USER }}
@@ -45,4 +46,4 @@ jobs:
             /repos/${{ github.repository }}/actions/variables/EMAIL_SENT \
             -f value="true"
         env:
-          PAT_TOKEN: ${{ secrets.PAT_TOKEN }}
+          GH_TOKEN: ${{ secrets.PAT_TOKEN }}

@@ -10,10 +10,6 @@ load_dotenv()
 URL = os.environ["URL"]
 TARGET_DATE = os.environ["TARGET_DATE"]
 
-if os.environ.get("EMAIL_SENT") == "true":
-    print("Email already sent. Exiting.")
-    exit()
-
 def send_email():
     msg = EmailMessage()
     msg["Subject"] = "Le Nozze di Figaro xa está dispoñible!"
