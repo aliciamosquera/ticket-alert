@@ -35,13 +35,10 @@ jobs:
           TARGET_DATE: ${{ vars.TARGET_DATE }}
           EMAIL_SENT: ${{ vars.EMAIL_SENT }}
         run: |
-          python main.py
-          # Set output based on Python exit code
-          if [ $? -eq 0 ]; then
-            echo "tickets_found=true" >> $GITHUB_OUTPUT
-          else
-            echo "tickets_found=false" >> $GITHUB_OUTPUT
-          fi
+          python main.py > output.log
+          # Read the output from Python to set the workflow output
+          tickets_found=$(grep 'tickets_found=' output.log | cut -d'=' -f2)
+          echo "tickets_found=$tickets_found" >> $GITHUB_OUTPUT
 
       - name: Mark email as sent
         if: ${{ steps.run_ticket_check.outputs.tickets_found == 'true' }}

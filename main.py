@@ -51,9 +51,10 @@ def main():
     if link:
         print("Tickets found! Sending email.")
         send_email()
-        print("Email sent!")
+        print("tickets_found=true")
     else:
         print("Tickets not available yet.")
+        print("tickets_found=false")
 
 if __name__ == "__main__":
     main()
