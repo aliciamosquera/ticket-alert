@@ -52,10 +52,8 @@ def main():
         print("Tickets found! Sending email.")
         send_email()
         print("Email sent!")
-        exit(0)
     else:
         print("Tickets not available yet.")
-        exit(1)
 
 if __name__ == "__main__":
     main()

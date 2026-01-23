@@ -22,7 +22,6 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-
       - id: run_ticket_check
         name: Run ticket check
         if: ${{ vars.EMAIL_SENT == 'false' }}
@@ -35,10 +34,17 @@ jobs:
           URL: ${{ secrets.URL }}
           TARGET_DATE: ${{ vars.TARGET_DATE }}
           EMAIL_SENT: ${{ vars.EMAIL_SENT }}
-        run: python main.py
+        run: |
+          python main.py
+          # Set output based on Python exit code
+          if [ $? -eq 0 ]; then
+            echo "tickets_found=true" >> $GITHUB_OUTPUT
+          else
+            echo "tickets_found=false" >> $GITHUB_OUTPUT
+          fi
 
       - name: Mark email as sent
-        if: ${{ success() && steps.run_ticket_check.outcome == 'success' }}
+        if: ${{ steps.run_ticket_check.outputs.tickets_found == 'true' }}
         run: |
           gh api \
             --method PATCH \
