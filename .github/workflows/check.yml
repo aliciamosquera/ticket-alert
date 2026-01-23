@@ -23,7 +23,8 @@ jobs:
           pip install -r requirements.txt
 
 
-      - name: Run ticket check
+      - id: run_ticket_check
+        name: Run ticket check
         env:
           SMTP_SERVER: ${{ secrets.SMTP_SERVER }}
           SMTP_USER: ${{ secrets.SMTP_USER }}
@@ -31,5 +32,17 @@ jobs:
           EMAIL_FROM: ${{ secrets.EMAIL_FROM }}
           EMAIL_TO: ${{ secrets.EMAIL_TO }}
           URL: ${{ secrets.URL }}
-          TARGET_DATE: ${{ secrets.TARGET_DATE }}
+          TARGET_DATE: ${{ vars.TARGET_DATE }}
+          EMAIL_SENT: ${{ vars.EMAIL_SENT }}
         run: python main.py
+
+      - name: Mark email as sent
+        if: ${{ success() && steps.run_ticket_check.outcome == 'success' }}
+        run: |
+          gh api \
+            --method PATCH \
+            -H "Accept: application/vnd.github+json" \
+            /repos/${{ github.repository }}/actions/variables/EMAIL_SENT \
+            -f value="true"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
