@@ -2,7 +2,7 @@ name: Ticket availability check
 
 on:
   schedule:
-    - cron: "2,32 * * *"   # every 30 minutes, between 07:00 and 23:00
+    - cron: "3,32 * * * *"   # every 30 minutes, between 07:00 and 23:00
 
   workflow_dispatch:
 
