@@ -12,14 +12,14 @@ TARGET_DATE = os.environ["TARGET_DATE"]
 
 def send_email():
     msg = EmailMessage()
-    msg["Subject"] = "Sanguijuelas del Guadiana ya disponibles!"
+    msg["Subject"] = "Le Nozze di Figaro xa está dispoñible!"
     msg["From"] = os.environ["EMAIL_FROM"]
     recipients = [email.strip() for email in os.environ["EMAIL_TO"].split(",")]
     msg["To"] = ", ".join(recipients)
 
     msg.set_content(
-        f"Ya están disponibles las entradas para el 8 de septiembre de Las Sanguijuelas del Guadiana.\n\n"
-        f"Corre que vuelan:\n{URL}"
+        f"Xa está dispoñible a sesión Under35 para 'Le Nozze di Figaro'.\n\n"
+        f"Corre que voa:\n{URL}"
     )
 
     with smtplib.SMTP_SSL(os.environ["SMTP_SERVER"], 465) as server:
@@ -35,18 +35,26 @@ def main():
 
     soup = BeautifulSoup(r.text, "html.parser")
 
-    # Find all date divs
-    date_divs = soup.find_all("div", class_="el-meta")
+    # Find the row containing the target date
+    time_tag = soup.find(
+        "time",
+        attrs={"datetime": lambda d: d and d.startswith(TARGET_DATE)}
+    )
+    if not time_tag:
+        print("Target date row not found.")
+        return
 
-    for div in date_divs:
-        date_text = div.get_text(strip=True).upper()
-        if TARGET_DATE == date_text:
-            print("Tickets found! Sending email.")
-            send_email()
-            print("tickets_found=true")
-        else:
-            print("Tickets not available yet.")
-            print("tickets_found=false")
+    row = time_tag.find_parent("tr")
+
+    # Check for Koobin link
+    link = row.find("a", href=lambda h: h and "koobin.com" in h)
+    if link:
+        print("Tickets found! Sending email.")
+        send_email()
+        print("tickets_found=true")
+    else:
+        print("Tickets not available yet.")
+        print("tickets_found=false")
 
 if __name__ == "__main__":
     main()
