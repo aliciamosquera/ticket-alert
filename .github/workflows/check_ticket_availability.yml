@@ -2,7 +2,7 @@ name: Ticket availability check
 
 on:
   schedule:
-    - cron: "26 7-22 * * *" 
+    - cron: "26,52 7-22 * * *" 
   push:
     branches:
       - main
