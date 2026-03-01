@@ -16,11 +16,13 @@ jobs:
       matrix:
         include:
           - event_id: FIGARO
+            EVENT_NAME: "Nozze di Figaro"
             URL: ${{ vars.URL_FIGARO }}
             TARGET_DATE: ${{ vars.TARGET_DATE_FIGARO }}
             EMAIL_SENT: ${{ vars.EMAIL_SENT_FIGARO }}
 
           - event_id: SDG
+            EVENT_NAME: "Sanguijuelas del Guadiana"
             URL: ${{ vars.URL_SDG }}
             TARGET_DATE: ${{ vars.TARGET_DATE_SDG }}
             EMAIL_SENT: ${{ vars.EMAIL_SENT_SDG }}

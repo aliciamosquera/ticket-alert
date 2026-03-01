@@ -8,7 +8,7 @@ event_id = os.getenv("EVENT_ID")
 url = os.getenv("URL")
 target_date = os.getenv("TARGET_DATE")
 email_to = os.getenv("EMAIL_TO")
-event_name = os.getenv("EVENT_NAME", event_id)
+event_name = os.getenv("EVENT_NAME")
 
 def send_email():
     msg = EmailMessage()
