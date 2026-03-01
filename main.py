@@ -2,22 +2,19 @@ import requests
 from bs4 import BeautifulSoup
 import smtplib
 from email.message import EmailMessage
-from dotenv import load_dotenv
 import os
 
-load_dotenv()
-
 event_id = os.getenv("EVENT_ID")
+url = os.getenv("URL")
+target_date = os.getenv("TARGET_DATE")
+email_to = os.getenv("EMAIL_TO")
+event_name = os.getenv("EVENT_NAME", event_id)
 
-def send_email(event_id):
-    event_name = os.environ[f"EVENT_NAME_{event_id}"]
-    email_to = os.environ[f"EMAIL_TO_{event_id}"]
-    url = os.environ[f"URL_{event_id}"]
-    target_date = os.environ[f"TARGET_DATE_{event_id}"]
-
+def send_email():
     msg = EmailMessage()
     msg["Subject"] = f"{event_name} xa dispoñible!"
     msg["From"] = os.environ["EMAIL_FROM"]
+
     recipients = [email.strip() for email in email_to.split(",")]
     msg["To"] = ", ".join(recipients)
 
@@ -33,59 +30,54 @@ def send_email(event_id):
         )
         server.send_message(msg)
 
-def main_SDG(event_id):
-    url = os.environ[f"URL_{event_id}"]
-    target_date = os.environ[f"TARGET_DATE_{event_id}"]
-
+def main_SDG():
     r = requests.get(url, timeout=30)
     r.raise_for_status()
     soup = BeautifulSoup(r.text, "html.parser")
 
     date_divs = soup.find_all("div", class_="el-meta")
+
     for div in date_divs:
-        date_text = div.get_text(strip=True).upper()
-        if target_date == date_text:
+        if target_date == div.get_text(strip=True).upper():
             print("Tickets found! Sending email.")
-            send_email(event_id)
-            print(f"tickets_found_{event_id}=true")
+            send_email()
+            print("tickets_found=true")
             return
-    
+
     print("Tickets not available yet.")
-    print(f"tickets_found_{event_id}=false")
+    print("tickets_found=false")
 
-def main_Figaro(event_id):
-    url = os.environ[f"URL_{event_id}"]
-    target_date = os.environ[f"TARGET_DATE_{event_id}"]
-
+def main_Figaro():
     r = requests.get(url, timeout=30)
     r.raise_for_status()
     soup = BeautifulSoup(r.text, "html.parser")
 
-    # Find the row containing the target date
     time_tag = soup.find(
         "time",
         attrs={"datetime": lambda d: d and d.startswith(target_date)}
     )
+
     if not time_tag:
-        print("Target date row not found.")
+        print("Tickets not available yet.")
+        print("tickets_found=false")
         return
-    
+
     row = time_tag.find_parent("tr")
 
-    # Check for Koobin link
     link = row.find("a", href=lambda h: h and "koobin.com" in h)
+
     if link:
         print("Tickets found! Sending email.")
-        send_email(event_id)
-        print(f"tickets_found_{event_id}=true")
+        send_email()
+        print("tickets_found=true")
     else:
         print("Tickets not available yet.")
-        print(f"tickets_found_{event_id}=false")
+        print("tickets_found=false")
 
 if __name__ == "__main__":
     if event_id == "SDG":
-        main_SDG(event_id)
+        main_SDG()
     elif event_id == "FIGARO":
-        main_Figaro(event_id)
+        main_Figaro()
     else:
         raise ValueError(f"Unknown EVENT_ID: {event_id}")
