@@ -40,6 +40,7 @@ jobs:
 
       - id: run_ticket_check
         name: Run ticket check
+        if: ${{ matrix.EMAIL_SENT == 'false' }}
         env:
           EVENT_ID: ${{ matrix.event_id }}
           EVENT_NAME: ${{ matrix.EVENT_NAME }}
@@ -58,4 +59,10 @@ jobs:
       - name: Mark email as sent
         if: ${{ steps.run_ticket_check.outputs.tickets_found == 'true' }}
         run: |
-          echo "EMAIL_SENT already managed externally or via Python logic"
+          gh api \
+            --method PATCH \
+            -H "Accept: application/vnd.github+json" \
+            /repos/${{ github.repository }}/actions/variables/EMAIL_SENT_${{ matrix.event_id }} \
+            -f value="true"
+        env:
+          GH_TOKEN: ${{ secrets.PAT_TOKEN }}
