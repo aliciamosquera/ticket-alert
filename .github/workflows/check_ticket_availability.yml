@@ -2,7 +2,7 @@ name: Ticket availability check
 
 on:
   schedule:
-    - cron: "26,52 7-22 * * *" 
+    - cron: "26,52 7-22 * * *"
   push:
     branches:
       - main
@@ -12,8 +12,13 @@ jobs:
   check:
     runs-on: ubuntu-latest
 
+    strategy:
+      matrix:
+        event_id: [SDG, FIGARO]   # Add more events here if needed
+
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -21,34 +26,43 @@ jobs:
           python-version: "3.11"
 
       - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Load event-specific configuration
+        env:
+          GH_TOKEN: ${{ secrets.PAT_TOKEN }}
         run: |
-          pip install -r requirements.txt
+          URL=$(gh variable get URL_${{ matrix.event_id }})
+          TARGET_DATE=$(gh variable get TARGET_DATE_${{ matrix.event_id }})
+          EMAIL_SENT=$(gh variable get EMAIL_SENT_${{ matrix.event_id }})
+          EMAIL_TO=$(gh secret get EMAIL_TO_${{ matrix.event_id }})
+
+          echo "URL=$URL" >> $GITHUB_ENV
+          echo "TARGET_DATE=$TARGET_DATE" >> $GITHUB_ENV
+          echo "EMAIL_SENT=$EMAIL_SENT" >> $GITHUB_ENV
+          echo "EMAIL_TO=$EMAIL_TO" >> $GITHUB_ENV
 
       - id: run_ticket_check
         name: Run ticket check
-        if: ${{ vars.EMAIL_SENT == 'false' }}
+        if: ${{ env.EMAIL_SENT == 'false' }}
         env:
+          EVENT_ID: ${{ matrix.event_id }}
           SMTP_SERVER: ${{ secrets.SMTP_SERVER }}
           SMTP_USER: ${{ secrets.SMTP_USER }}
           SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD }}
           EMAIL_FROM: ${{ secrets.EMAIL_FROM }}
-          EMAIL_TO: ${{ secrets.EMAIL_TO }}
-          URL: ${{ secrets.URL }}
-          TARGET_DATE: ${{ vars.TARGET_DATE }}
-          EMAIL_SENT: ${{ vars.EMAIL_SENT }}
+          EMAIL_TO: ${{ env.EMAIL_TO }}
+          URL: ${{ env.URL }}
+          TARGET_DATE: ${{ env.TARGET_DATE }}
+          EMAIL_SENT: ${{ env.EMAIL_SENT }}
         run: |
           python main.py > output.log
-          # Read the output from Python to set the workflow output
           tickets_found=$(grep 'tickets_found=' output.log | cut -d'=' -f2)
           echo "tickets_found=$tickets_found" >> $GITHUB_OUTPUT
 
       - name: Mark email as sent
         if: ${{ steps.run_ticket_check.outputs.tickets_found == 'true' }}
-        run: |
-          gh api \
-            --method PATCH \
-            -H "Accept: application/vnd.github+json" \
-            /repos/${{ github.repository }}/actions/variables/EMAIL_SENT \
-            -f value="true"
         env:
           GH_TOKEN: ${{ secrets.PAT_TOKEN }}
+        run: |
+          gh variable set EMAIL_SENT_${{ matrix.event_id }} --body "true"
