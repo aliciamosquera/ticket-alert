@@ -18,13 +18,11 @@ jobs:
           - event_id: FIGARO
             URL: ${{ vars.URL_FIGARO }}
             TARGET_DATE: ${{ vars.TARGET_DATE_FIGARO }}
-            EMAIL_TO: ${{ secrets.EMAIL_TO_FIGARO }}
             EMAIL_SENT: ${{ vars.EMAIL_SENT_FIGARO }}
 
           - event_id: SDG
             URL: ${{ vars.URL_SDG }}
             TARGET_DATE: ${{ vars.TARGET_DATE_SDG }}
-            EMAIL_TO: ${{ secrets.EMAIL_TO_SDG }}
             EMAIL_SENT: ${{ vars.EMAIL_SENT_SDG }}
 
     steps:
@@ -46,7 +44,7 @@ jobs:
           SMTP_USER: ${{ secrets.SMTP_USER }}
           SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD }}
           EMAIL_FROM: ${{ secrets.EMAIL_FROM }}
-          EMAIL_TO: ${{ matrix.EMAIL_TO }}
+          EMAIL_TO: ${{ secrets[format('EMAIL_TO_{0}', matrix.event_id)] }}
           URL: ${{ matrix.URL }}
           TARGET_DATE: ${{ matrix.TARGET_DATE }}
         run: |
