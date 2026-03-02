@@ -5,10 +5,10 @@ from email.message import EmailMessage
 import os
 
 event_id = os.getenv("EVENT_ID")
+event_name = os.getenv("EVENT_NAME")
 url = os.getenv("URL")
 target_date = os.getenv("TARGET_DATE")
 email_to = os.getenv("EMAIL_TO")
-event_name = os.getenv("EVENT_NAME")
 
 def send_email():
     msg = EmailMessage()
