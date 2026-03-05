@@ -1,6 +1,4 @@
 requests
 beautifulsoup4
 python-dotenv
-
-# for testing
 pytest
